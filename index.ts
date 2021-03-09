@@ -1,81 +1,75 @@
-import express from 'express'
-import bodyParser from 'body-parser'
-import cors from 'cors'
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
-import { body, query, validationResult } from 'express-validator'
+import express, { Router } from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { body, query, validationResult } from "express-validator";
+import { userInfo } from "os";
 
-const app = express()
-app.use(bodyParser.json())
-app.use(cors())
+const app = express();
+app.use(bodyParser.json());
+app.use(cors());
 
-const PORT = process.env.PORT || 3000
-const SECRET = "SIMPLE_SECRET"
+const authRoute = require("auth");
+
+app.use("/api/user", authRoute);
+
+const PORT = process.env.PORT || 3000;
+const SECRET = "SIMPLE_SECRET";
 
 interface JWTPayload {
   username: string;
   password: string;
 }
 
-app.post('/login',
-  (req, res) => {
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
 
-    const { username, password } = req.body
-    // Use username and password to create token.
+  // Use username and password to create token.
 
-    return res.status(200).json({
-      message: 'Login succesfully',
-    })
-  })
+  return res.status(200).json({
+    message: "Login succesfully"
+  });
+});
 
-app.post('/register',
-  (req, res) => {
+app.post("/register", (req, res) => {
+  const { username, password, firstname, lastname, balance } = req.body;
+});
 
-    const { username, password, firstname, lastname, balance } = req.body
-  })
+app.get("/balance", (req, res) => {
+  const token = req.query.token as string;
+  try {
+    const { username } = jwt.verify(token, SECRET) as JWTPayload;
+  } catch (e) {
+    //response in case of invalid token
+  }
+});
 
-app.get('/balance',
-  (req, res) => {
-    const token = req.query.token as string
-    try {
-      const { username } = jwt.verify(token, SECRET) as JWTPayload
-  
-    }
-    catch (e) {
-      //response in case of invalid token
-    }
-  })
+app.post("/deposit", body("amount").isInt({ min: 1 }), (req, res) => {
+  //Is amount <= 0 ?
+  if (!validationResult(req).isEmpty())
+    return res.status(400).json({ message: "Invalid data" });
+});
 
-app.post('/deposit',
-  body('amount').isInt({ min: 1 }),
-  (req, res) => {
+app.post("/withdraw", (req, res) => {});
 
-    //Is amount <= 0 ?
-    if (!validationResult(req).isEmpty())
-      return res.status(400).json({ message: "Invalid data" })
-  })
-
-app.post('/withdraw',
-  (req, res) => {
-  })
-
-app.delete('/reset', (req, res) => {
-
+app.delete("/reset", (req, res) => {
   //code your database reset here
-  
+
   return res.status(200).json({
-    message: 'Reset database successfully'
-  })
-})
+    message: "Reset database successfully"
+  });
+});
 
-app.get('/me', (req, res) => {
-  
-})
+app.get("/me", (req, res) => {});
 
-app.get('/demo', (req, res) => {
+app.get("/demo", (req, res) => {
   return res.status(200).json({
-    message: 'This message is returned from demo route.'
-  })
-})
+    message: "This message is returned from demo route."
+  });
+});
 
-app.listen(PORT, () => console.log(`Server is running at ${PORT}`))
+app.listen(PORT, () => console.log(`Server is running at ${PORT}`));
+
+//const emailExist = await userInfo.findOne({email: req.body.email});
+//if(emailExist) return res.status(400).send('Username is already in used');
