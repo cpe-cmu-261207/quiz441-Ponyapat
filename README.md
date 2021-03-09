@@ -7,4 +7,4 @@
 
 ปุญญญพัฒน์ อนุสนธิ 620612156
 
-https://dashboard.heroku.com/apps/minimal-bank-ponyapat
+https://quiz4-guide.herokuapp.com/
